@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Painel de Acompanhamento Orçamentário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,600;0,700;0,800;1,600;1,700;1,800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#3FA110; --verde-esc:#146E37; --verde-cl:#D7E6C8; --amarelo:#FFCD00; --neutro:#5A645A;
+  --magenta:#E60050; --bordo:#730028; --laranja:#FF6400; --azul:#46D7FF;
+  --bg:#F1F6EB; --surface:#FFFFFF; --surface2:#EAF2E1; --ink:#1F2B23; --muted:#5A645A; --line:#D9E5CF;
+  --h3:#146E37; --favtxt:#146E37; --unf:#E60050; --gridline:#E3EBDB; --bar-orc:#BCCDAE; --neutro-line:#5A645A;
+  --tag-fav-bg:#E2F1D6; --tag-fav:#146E37; --tag-unf-bg:#FDE1EA; --tag-unf:#B0003A; --tag-neu-bg:#ECF0E8; --tag-neu:#4B554B;
+  --hdr1:#146E37; --hdr2:#3FA110; --tipbg:#1F2B23; --tipfg:#FFFFFF;
+  --shadow:0 1px 2px rgba(20,110,55,.07),0 10px 24px -14px rgba(20,110,55,.28);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1710; --surface:#15221A; --surface2:#1D2E22; --ink:#E7EFE8; --muted:#A5B3A8; --line:#2A3D2F;
+    --h3:#9BE070; --favtxt:#8FE05B; --unf:#FF5C8D; --gridline:#243629; --bar-orc:#43584A; --neutro-line:#A5B3A8;
+    --tag-fav-bg:#1F3A1B; --tag-fav:#9BE070; --tag-unf-bg:#4A1428; --tag-unf:#FF8FB1; --tag-neu-bg:#243027; --tag-neu:#B9C6BC;
+    --hdr1:#0F4A26; --hdr2:#2F7D10; --tipbg:#E7EFE8; --tipfg:#15221A;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1710; --surface:#15221A; --surface2:#1D2E22; --ink:#E7EFE8; --muted:#A5B3A8; --line:#2A3D2F;
+  --h3:#9BE070; --favtxt:#8FE05B; --unf:#FF5C8D; --gridline:#243629; --bar-orc:#43584A; --neutro-line:#A5B3A8;
+  --tag-fav-bg:#1F3A1B; --tag-fav:#9BE070; --tag-unf-bg:#4A1428; --tag-unf:#FF8FB1; --tag-neu-bg:#243027; --tag-neu:#B9C6BC;
+  --hdr1:#0F4A26; --hdr2:#2F7D10; --tipbg:#E7EFE8; --tipfg:#15221A;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 90px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:400 15px/1.5 Nunito,Calibri,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Exo 2','Trebuchet MS','Segoe UI',Calibri,sans-serif;margin:0}
+button,select,input{font:inherit;color:inherit}
+.wrap{max-width:1440px;margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;color:#000;padding:8px 12px;border-radius:8px;z-index:100}
+.skip:focus{left:8px}
+:focus-visible{outline:3px solid var(--amarelo);outline-offset:2px}
+
+/* Cabeçalho */
+.top{background:linear-gradient(100deg,var(--hdr1) 0%,var(--hdr2) 100%);color:#fff;padding:26px 0 52px;clip-path:polygon(0 0,100% 0,100% calc(100% - 24px),0 100%)}
+.top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.top h1{font-style:italic;font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.01em}
+.top p{margin:8px 0 0;opacity:.92;font-size:15px;max-width:60ch}
+.top-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:var(--amarelo);color:#3a2f00;font-weight:800;font-size:12.5px}
+.btn{cursor:pointer;border:1.5px solid var(--verde);background:var(--verde);color:#fff;padding:8px 16px;border-radius:10px;font-weight:700;font-size:14px}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:var(--verde-esc);border-color:var(--line)}
+.btn.ghost:hover{background:var(--surface2)}
+.top .btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55);color:#fff}
+.top .btn:hover{background:rgba(255,255,255,.26)}
+.tabs{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap;padding-left:8px}
+.tab{cursor:pointer;border:0;background:rgba(255,255,255,.15);color:#fff;padding:10px 22px;border-radius:7px;transform:skewX(-12deg);font-family:'Exo 2','Trebuchet MS',sans-serif;font-style:italic;font-weight:700;font-size:15.5px}
+.tab>span{display:block;transform:skewX(12deg)}
+.tab:hover{background:rgba(255,255,255,.28)}
+.tab[aria-selected="true"]{background:#fff;color:var(--verde-esc)}
+
+/* Filtros */
+.fbar{background:var(--surface);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+@media (min-width:1000px){.fbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30}}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px;align-items:end;padding-top:12px;padding-bottom:12px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f>span{font-weight:700;font-size:12px;color:var(--muted)}
+.f select{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);font-size:14px}
+.f select:disabled{opacity:.5}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;cursor:pointer;border:0;background:var(--surface);padding:8px 8px;font-weight:700;font-size:13px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--verde);color:#fff}
+
+/* Estrutura */
+main.wrap{padding-top:22px;padding-bottom:60px}
+.ph{margin-bottom:18px}
+.ph h2{font-style:italic;font-weight:800;font-size:28px;color:var(--h3)}
+.ph p{margin:2px 0 0;color:var(--muted);font-size:16px}
+.sec{margin-top:30px}
+.sec>h3{font-style:italic;font-weight:700;font-size:20px;color:var(--h3)}
+.sec>.lead{margin:2px 0 14px;color:var(--muted);font-size:14px;max-width:80ch}
+.pn{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);min-width:0}
+.pn>h4{font-style:italic;font-weight:700;font-size:16.5px}
+.pn>.sub{color:var(--muted);font-size:13px;margin:2px 0 12px}
+.g2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:20px}
+.g2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:980px){.g2,.g2e{grid-template-columns:1fr}}
+.top-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:22px;align-items:stretch}
+@media (max-width:980px){.top-grid{grid-template-columns:1fr}}
+.muted{color:var(--muted)}
+.lnk{cursor:pointer;background:none;border:0;color:var(--verde-esc);font-weight:800;text-decoration:underline;text-underline-offset:3px;padding:0}
+[data-theme="dark"] .lnk,:root:not([data-theme="light"]) .lnk{color:var(--h3)}
+.fav{color:var(--favtxt)} .unf{color:var(--unf)} .neu{color:var(--muted)}
+
+/* Leitura executiva e destaque */
+.narr{border-left:7px solid var(--verde);padding:6px 0 6px 22px;display:flex;flex-direction:column;justify-content:center}
+.narr h3{font-style:italic;font-weight:700;font-size:15px;color:var(--muted);margin-bottom:6px}
+.narr p{margin:0;font:600 20px/1.55 'Exo 2','Trebuchet MS',Calibri,sans-serif;max-width:66ch}
+.narr p+p{margin-top:10px}
+.narr b.fav,.narr b.unf,.narr b.neu{font-weight:800}
+.hero{background:linear-gradient(120deg,var(--verde-esc) 0%,var(--verde) 100%);color:#fff;border-radius:20px;padding:22px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-30px;width:150px;height:220px;background:rgba(255,255,255,.10);transform:skewX(-14deg)}
+.hero .hl{font-weight:700;font-size:14px;opacity:.95}
+.hero .hv{font:italic 800 clamp(34px,4vw,48px)/1.1 'Exo 2','Trebuchet MS',sans-serif;margin:6px 0 4px}
+.hero .hd{font-weight:800;font-size:15px}
+.hero .hs{font-size:13.5px;opacity:.92;margin-top:8px}
+.hero .hr{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.35);font-size:13.5px}
+
+/* KPIs */
+.kstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+.k{background:var(--surface);padding:16px 20px}
+.k-l{font-weight:700;font-size:13px;color:var(--muted)}
+.k-v{font:800 27px/1.2 'Exo 2','Trebuchet MS',sans-serif;margin:4px 0 4px;font-variant-numeric:tabular-nums}
+.k-d{font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.k-s{font-size:12.5px;color:var(--muted);margin-top:4px}
+.ar{flex:none}
+.mr{display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:baseline;margin-top:6px;font-size:13.5px}
+.mr>span{color:var(--muted);font-weight:700}
+.mr>b{font-weight:800;font-variant-numeric:tabular-nums}
+.mr>em{grid-column:2;font-style:normal;font-weight:800;font-size:12.5px}
+
+/* Tags */
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:800;font-size:11.5px;white-space:nowrap;line-height:1.5}
+.tag.fav{background:var(--tag-fav-bg);color:var(--tag-fav)}
+.tag.unf{background:var(--tag-unf-bg);color:var(--tag-unf)}
+.tag.neu{background:var(--tag-neu-bg);color:var(--tag-neu)}
+.tag.out{background:transparent;box-shadow:inset 0 0 0 1.5px currentColor}
+.tag.hi{background:#730028;color:#fff}
+.tag.mid{background:#FFCD00;color:#3a2f00}
+.tag.lo{background:#D7E6C8;color:#2f4a1f}
+[data-theme="dark"] .tag.lo{background:#2A3D2F;color:#C9DBC0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tag.lo{background:#2A3D2F;color:#C9DBC0}}
+
+/* Tabelas */
+.tw{overflow-x:auto;margin:0 -4px;padding:0 4px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+.t th{font-weight:800;text-align:left;padding:9px 10px;border-bottom:2px solid var(--verde);color:var(--h3);white-space:nowrap;font-size:12.5px;vertical-align:bottom}
+.t th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+.t th button:focus-visible{outline:3px solid var(--amarelo)}
+.t th[aria-sort="ascending"] button::after{content:"▲";font-size:9px}
+.t th[aria-sort="descending"] button::after{content:"▼";font-size:9px}
+.t td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.t .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.t th.n{text-align:right}
+.t tbody tr:hover td{background:var(--surface2)}
+.t td small{display:block;color:var(--muted);font-size:11.5px;font-weight:600}
+.t tr.xp{cursor:pointer}
+.t tr.child td{background:color-mix(in srgb,var(--surface2) 55%,transparent);font-size:13px}
+.t tr.child td.nm{padding-left:34px}
+.t tr.tot td{font-weight:800;border-top:2px solid var(--verde);border-bottom:0}
+.chev{display:inline-block;width:14px;transition:transform .15s;color:var(--verde)}
+tr[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.sp{vertical-align:middle;margin-right:6px}
+.tr-l{font-weight:800;font-size:12.5px}
+
+/* Gráficos */
+.chart{width:100%;min-height:40px}
+.svgc{display:block;max-width:100%;overflow:visible}
+.svgc .gl{stroke:var(--gridline);stroke-width:1}
+.svgc .gl.z{stroke:var(--muted);stroke-width:1.2;opacity:.6}
+.svgc .ax{fill:var(--muted);font:600 11px Nunito,Calibri,Arial,sans-serif}
+.svgc .vl{fill:var(--ink);font:800 11.5px Nunito,Calibri,Arial,sans-serif}
+.svgc .refl{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 4;opacity:.7}
+.lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 8px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px}
+.sw.line{height:3px;width:18px;border-radius:2px}
+.sw.dash{height:0;border-top:3px dashed;width:18px;border-radius:0;background:none!important}
+.sw.hatch{background:repeating-linear-gradient(45deg,var(--verde) 0 2px,var(--verde-cl) 2px 5px)}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* Barras em HTML */
+.hb{display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.hb:last-child{border-bottom:0}
+.hb-l{font-weight:700;font-size:13.5px;line-height:1.25}
+.hb-l small{display:block;color:var(--muted);font-weight:600;font-size:11.5px}
+.hb-t{display:flex;flex-direction:column;gap:4px}
+.hb-r{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hb-r i{display:block;height:11px;border-radius:0 6px 6px 0;min-width:2px}
+.hb-r i.o{background:var(--bar-orc)}
+.hb-r i.r{background:var(--verde)}
+.hb-v{font-weight:800;font-size:13px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dr{display:grid;grid-template-columns:minmax(120px,1.3fr) minmax(90px,1fr) auto auto;gap:8px 12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.dr:last-child{border-bottom:0}
+.dr-n{font-weight:700;font-size:13.5px;line-height:1.25}
+.dr-n small{display:block;color:var(--muted);font-weight:600;font-size:11.5px}
+.dr-b{position:relative;height:14px;background:linear-gradient(var(--gridline),var(--gridline)) center/1px 100% no-repeat}
+.dr-b b{position:absolute;top:1px;height:12px;border-radius:0 6px 6px 0}
+.dr-b b.p{left:50%;background:var(--verde)}
+.dr-b b.n{right:50%;background:var(--magenta);border-radius:6px 0 0 6px}
+.dr-v{font-weight:800;font-size:13.5px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.dr{grid-template-columns:1fr auto}.dr-b{grid-column:1/-1;order:3}.dr-t{grid-column:1/-1;order:4}.hb{grid-template-columns:1fr auto}.hb-t{grid-column:1/-1;order:3}}
+
+/* Destaques */
+.hlg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:1000px){.hlg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.hlg{grid-template-columns:1fr}.narr p{font-size:17px}}
+.hli{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--verde);border-radius:6px 16px 16px 6px;padding:14px 16px;box-shadow:var(--shadow)}
+.hli-t{font-weight:800;font-size:14.5px;line-height:1.3}
+.hli-s{color:var(--muted);font-size:12.5px;font-weight:600}
+.hli-v{font:800 22px/1.3 'Exo 2','Trebuchet MS',sans-serif;margin:6px 0 6px;font-variant-numeric:tabular-nums}
+.hli-v small{font:700 13px Nunito,sans-serif;margin-left:4px}
+.hli-g{display:flex;gap:6px;flex-wrap:wrap}
+.insight{margin-top:14px;padding:12px 16px;background:var(--surface2);border-radius:12px;font-size:14px}
+.cb{display:inline-block;height:8px;border-radius:4px;vertical-align:middle;margin-left:8px}
+
+.empty{text-align:center;padding:60px 20px}
+.empty h3{font-style:italic;font-size:22px;color:var(--h3)}
+.empty p{color:var(--muted);max-width:52ch;margin:8px auto 16px}
+.ctrl{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end}
+.ctrl .f{min-width:200px}
+.ctrl input[type=range]{width:100%;accent-color:var(--verde)}
+.method{font-size:14px;line-height:1.6}
+.method code{background:var(--surface2);padding:1px 7px;border-radius:6px;font-weight:700}
+
+footer{padding:24px 0 40px;color:var(--muted);font-size:12.5px}
+footer .wrap{max-width:1440px}
+
+/* Diálogos */
+dialog{border:0;border-radius:18px;padding:0;max-width:min(560px,92vw);width:100%;background:var(--surface);color:var(--ink);box-shadow:0 24px 60px -12px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(10,30,15,.55)}
+.dlg{padding:24px 26px}
+.dlg h3{font-style:italic;font-size:21px;color:var(--h3);margin-bottom:6px}
+.dlg .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.dlg input[type=number]{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface)}
+.dlg code{background:var(--surface2);padding:1px 6px;border-radius:6px;font-size:12.5px;word-break:break-word}
+.dlg .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.msg{margin-top:10px;font-weight:700;font-size:13.5px}
+#tip{position:fixed;z-index:99;display:none;pointer-events:none;background:var(--tipbg);color:var(--tipfg);padding:8px 11px;border-radius:9px;font-size:12.5px;line-height:1.45;max-width:270px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#tip b{font-weight:800}
+#tip .tr{display:flex;justify-content:space-between;gap:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{.fbar,.top-act,.tabs{display:none}.top{clip-path:none;padding-bottom:20px}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Ir para o conteúdo</a>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div>
+        <h1>Painel de Acompanhamento Orçamentário</h1>
+        <p id="subt"></p>
+      </div>
+      <div class="top-act">
+        <span class="pill" id="srcpill">Dados simulados</span>
+        <button class="btn" id="btn-params" type="button">Parâmetros</button>
+        <button class="btn" id="btn-load" type="button">Carregar base</button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Páginas do painel"></nav>
+  </div>
+</header>
+
+<div class="fbar">
+  <div class="wrap fgrid" role="group" aria-label="Filtros">
+    <label class="f"><span>Mês de referência</span><select id="f-ref" data-f="ref"></select></label>
+    <div class="f"><span>Visão do período</span>
+      <div class="seg"><button type="button" data-mode="ytd">Acumulado</button><button type="button" data-mode="mes">Só o mês</button></div>
+    </div>
+    <label class="f"><span>Unidade</span><select id="f-uni" data-f="uni"><option>Cooperativa</option><option>Agências</option><option>Sede</option></select></label>
+    <label class="f"><span>Agência</span><select id="f-ag" data-f="ag"></select></label>
+    <label class="f"><span>Natureza</span><select id="f-nat" data-f="nat"><option value="T">Resultado (receitas e despesas)</option><option value="R">Receitas</option><option value="D">Despesas</option></select></label>
+    <label class="f"><span>Grupo de conta</span><select id="f-grp" data-f="grp"></select></label>
+    <label class="f"><span>Conta</span><select id="f-conta" data-f="conta"></select></label>
+    <button class="btn ghost" id="btn-clear" type="button">Limpar filtros</button>
+  </div>
+</div>
+
+<main class="wrap" id="main"><div id="view" aria-live="polite"></div></main>
+
+<footer>
+  <div class="wrap">
+    Desvio = realizado menos orçado. Em receitas, desvio positivo é favorável. Em despesas, desvio negativo é favorável.
+    Forecast = realizado acumulado + orçamento restante × fator de performance. Valores das tabelas em R$ mil.
+  </div>
+</footer>
+
+<dialog id="dlgP"><div class="dlg">
+  <h3>Parâmetros de análise</h3>
+  <p class="muted" style="margin:0">Defina os limites de materialidade com base no tamanho do orçamento da cooperativa. Os limites valem para o desvio acumulado no ano. Na visão "Só o mês", são divididos pelo número de meses do período.</p>
+  <div class="row">
+    <label class="f"><span>Alto impacto a partir de (R$ mil)</span><input type="number" min="0" step="10" id="p-hi" data-f="matHi"></label>
+    <label class="f"><span>Médio impacto a partir de (R$ mil)</span><input type="number" min="0" step="10" id="p-mid" data-f="matMid"></label>
+  </div>
+  <p class="muted" style="margin:0;font-size:13px">Abaixo do limite médio, o desvio é classificado como baixo impacto. O método e os cenários do Forecast são ajustados na página Forecast.</p>
+  <div class="acts"><button class="btn" type="button" data-close="dlgP">Concluir</button></div>
+</div></dialog>
+
+<dialog id="dlgL"><div class="dlg">
+  <h3>Carregar a base da cooperativa</h3>
+  <p class="muted" style="margin:0">Selecione um arquivo CSV com uma linha por mês, conta e agência. Os dados são lidos no seu navegador e não são enviados a nenhum servidor.</p>
+  <p style="margin:12px 0 4px;font-weight:700">Colunas esperadas</p>
+  <p style="margin:0;font-size:13.5px"><code>ano</code> <code>mes</code> <code>natureza</code> <code>grupo</code> <code>codigo</code> <code>conta</code> <code>origem</code> <code>agencia</code> <code>orcado</code> <code>realizado</code></p>
+  <p class="muted" style="font-size:13px;margin:8px 0 0">Natureza: Receita ou Despesa. Origem: Agência ou Sede. Mês: 1 a 12. Valores em reais, positivos, para receitas e despesas. Deixe o realizado em branco nos meses futuros. Separador vírgula ou ponto e vírgula.</p>
+  <div class="row" style="grid-template-columns:1fr;margin-bottom:0"><input type="file" id="file" accept=".csv,.txt,text/csv"></div>
+  <div class="msg" id="lmsg" role="status"></div>
+  <div class="acts"><button class="btn ghost" type="button" id="btn-sim">Voltar aos dados simulados</button><button class="btn" type="button" data-close="dlgL">Fechar</button></div>
+</div></dialog>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+'use strict';
+/* ============ utilidades ============ */
+const MES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESF=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sum=(a,i0=0,i1=a.length)=>{let s=0;for(let i=i0;i<i1;i++)s+=(a[i]||0);return s;};
+const nfc=(v,d=0)=>v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+function money(v){const a=Math.abs(v);let t;
+  if(a>=1e6)t=nfc(a/1e6,a>=1e8?0:a>=1e7?1:2)+' mi';
+  else if(a>=1e3)t=nfc(a/1e3,a>=1e4?0:1)+' mil';
+  else t=nfc(a,0);
+  return (v<0?'−':'')+'R$ '+t;}
+const sgn=v=>v>0?'+':v<0?'−':'';
+const smoney=v=>{const t=money(Math.abs(v));return (Math.abs(v)<0.5?'':sgn(v))+t;};
+const mil=v=>(v<-500?'−':'')+nfc(Math.abs(v)/1000,0);
+const smil=v=>Math.abs(v)<500?'0':sgn(v)+nfc(Math.abs(v)/1000,0);
+const pct=(v,d=1)=>(Math.abs(v)<0.0005?'':sgn(v))+nfc(Math.abs(v)*100,d)+'%';
+function axis(v){const a=Math.abs(v),s=v<0?'−':'';if(a>=1e6)return s+nfc(a/1e6,a%1e6===0?0:1)+' mi';if(a>=1e3)return s+nfc(a/1e3,0)+' mil';return s+nfc(a,0);}
+const agLabel=x=>x==='Sede'?'Sede/Retaguarda':x;
+
+/* ============ estado e dados ============ */
+const S={tab:'exec',ref:8,mode:'ytd',uni:'Cooperativa',ag:'Todas',nat:'T',grp:'Todos',conta:'Todas',
+  method:'ytd',amp:2,matHi:500,matMid:150,sort:{k:'ord',d:1},exp:new Set()};
+let LINES=[],LAST=8,ANO=2026,SRC='sim',SRCNAME='',CH={},UID=0;
+
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const AGS=['Centro','Zona Norte','Zona Sul','Zona Leste','Zona Oeste','Boa Vista','Jardim América','Vila Nova','Distrito Industrial','Porto','Rodoviária','Universitária'].map((n,i)=>n+' ('+String(101+i).padStart(4,'0')+')');
+const AGW=[.16,.12,.11,.10,.09,.08,.08,.07,.06,.05,.04,.04];
+const ADJR=[.035,.012,-.008,.02,-.03,.005,.028,-.012,-.045,.015,-.02,.008];
+const ADJD=[-.01,.005,.01,-.005,.02,0,-.008,.01,.03,-.004,.012,0];
+/* cod, conta, natureza, grupo, orçamento anual (R$ mil), parcela nas agências, viés, deriva mensal, ruído, crescimento mensal */
+const ACC=[
+ ['3.1.1','Rendas de operações de crédito','R','Receitas de intermediação financeira',210000,1,.012,.0022,.010,.006],
+ ['3.1.2','Rendas de aplicações e títulos','R','Receitas de intermediação financeira',62000,0,.004,0,.012,.004],
+ ['3.2.1','Tarifas e pacotes de serviços','R','Receitas de serviços',28000,1,.025,0,.012,.004],
+ ['3.2.2','Cobrança e arrecadação','R','Receitas de serviços',9500,1,-.015,-.001,.015,.002],
+ ['3.2.3','Seguros e previdência','R','Receitas de serviços',24000,.9,.030,.0018,.015,.008],
+ ['3.2.4','Consórcios','R','Receitas de serviços',11000,1,-.02,-.0055,.02,.010],
+ ['3.2.5','Cartões e intercâmbio','R','Receitas de serviços',17500,.85,.010,.0005,.012,.006],
+ ['3.3.1','Recuperação de créditos','R','Outras receitas',14000,0,.05,0,.05,.004],
+ ['3.3.2','Outras receitas operacionais','R','Outras receitas',6000,.5,.01,0,.03,.003],
+ ['4.1.1','Despesas de captação','D','Despesas de intermediação financeira',118000,0,.006,.0006,.008,.008],
+ ['4.1.2','Provisão para perdas','D','Despesas de intermediação financeira',46000,0,.02,.0100,.02,.006],
+ ['4.1.3','Repasses e obrigações','D','Despesas de intermediação financeira',12000,0,-.01,0,.015,.005],
+ ['4.2.1','Salários e encargos','D','Despesas de pessoal',62000,.72,-.012,0,.006,.002],
+ ['4.2.2','Benefícios','D','Despesas de pessoal',14500,.7,-.005,0,.01,.002],
+ ['4.2.3','Treinamento e capacitação','D','Despesas de pessoal',2600,.6,-.04,0,.06,.003],
+ ['4.3.1','Aluguéis e condomínios','D','Despesas administrativas',8200,.85,.005,0,.006,.003],
+ ['4.3.2','Água, energia e comunicação','D','Despesas administrativas',4800,.8,.06,.0025,.03,.003],
+ ['4.3.3','Serviços de terceiros','D','Despesas administrativas',12500,.5,-.06,0,.03,.003],
+ ['4.3.4','Publicidade e marketing','D','Despesas administrativas',7200,.4,-.02,0,.05,.004],
+ ['4.3.5','Viagens e deslocamentos','D','Despesas administrativas',2900,.4,.04,.001,.05,.003],
+ ['4.3.6','Material e manutenção','D','Despesas administrativas',3100,.75,-.02,0,.03,.003],
+ ['4.4.1','Processamento de dados','D','Despesas de tecnologia',15500,0,.03,.0090,.015,.004],
+ ['4.4.2','Licenças e software','D','Despesas de tecnologia',6400,0,.04,.0010,.02,.002],
+ ['4.4.3','Telecomunicações e redes','D','Despesas de tecnologia',3800,.5,.015,0,.02,.002],
+ ['4.5.1','Depreciação e amortização','D','Outras despesas',7500,.7,-.01,0,.008,.002],
+ ['4.5.2','Contribuições e cooperativismo','D','Outras despesas',5200,0,0,0,.02,.002],
+ ['4.5.3','Outras despesas operacionais','D','Outras despesas',4400,.5,-.05,0,.06,.003]
+];
+const EV={'4.3.4':{5:1.5},'3.3.1':{6:1.4},'4.2.3':{2:.35,3:.5},'4.5.3':{3:1.8}};
+const DEC={'3.2.5':.18,'3.2.1':.08,'4.3.4':.2};
+function genRows(){
+  const R=rng(2026);
+  const G=()=>{let u=0,v=0;while(!u)u=R();while(!v)v=R();return Math.sqrt(-2*Math.log(u))*Math.cos(6.283185307*v);};
+  const rows=[];
+  for(const [cod,conta,nat,grupo,ann,agSh,bias,drift,sd,gr] of ACC){
+    const dec=DEC[cod]||0,w=[];
+    for(let m=1;m<=12;m++)w.push(1+gr*(m-6.5)+(m>=11?dec:0));
+    const ws=sum(w);
+    for(let m=1;m<=12;m++){
+      const base=ann*1000*w[m-1]/ws,units=[];
+      if(agSh>0)AGS.forEach((a,i)=>units.push({ag:a,org:'Agências',v:base*agSh*AGW[i],adj:nat==='R'?ADJR[i]:ADJD[i],k:1.5}));
+      if(agSh<1)units.push({ag:'Sede',org:'Sede',v:base*(1-agSh),adj:0,k:1});
+      for(const u of units){
+        const orc=Math.round(u.v);let real=null;
+        if(m<=8){let f=1+bias+drift*(m-1)+u.adj+sd*u.k*G();const ev=(EV[cod]||{})[m];if(ev)f*=ev;real=Math.round(orc*Math.max(.05,f));}
+        rows.push({m,cod,conta,nat,grupo,org:u.org,ag:u.ag,orc,real});
+      }
+    }
+  }
+  return rows;
+}
+function buildLines(rows){
+  const map=new Map();
+  for(const r of rows){
+    const key=r.cod+'|'+r.ag;let l=map.get(key);
+    if(!l){l={key,cod:r.cod,conta:r.conta,grupo:r.grupo,nat:r.nat,org:r.org,ag:r.ag,sg:r.nat==='R'?1:-1,orc:Array(12).fill(0),real:Array(12).fill(null)};map.set(key,l);}
+    l.orc[r.m-1]+=r.orc;
+    if(r.real!=null)l.real[r.m-1]=(l.real[r.m-1]||0)+r.real;
+  }
+  return [...map.values()];
+}
+function lastActual(lines){let m=0;for(const l of lines)l.real.forEach((v,i)=>{if(v!=null&&i+1>m)m=i+1;});return m||1;}
+function loadSim(){LINES=buildLines(genRows());LAST=lastActual(LINES);ANO=2026;SRC='sim';SRCNAME='';S.ref=LAST;}
+
+/* ============ importação de CSV ============ */
+function parseCSV(text){
+  text=text.replace(/^\uFEFF/,'');
+  const first=text.split(/\r?\n/,1)[0];
+  const delim=first.split(';').length>first.split(',').length?';':',';
+  const rows=[];let cur=[],f='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}
+    else if(c==='"')q=true;
+    else if(c===delim){cur.push(f);f='';}
+    else if(c==='\n'){cur.push(f);rows.push(cur);cur=[];f='';}
+    else if(c!=='\r')f+=c;}
+  if(f!==''||cur.length){cur.push(f);rows.push(cur);}
+  return rows.filter(r=>r.some(x=>x.trim()!==''));
+}
+function parseNum(s){
+  if(s==null)return null;s=String(s).replace(/R\$|\s/g,'');if(s==='')return null;
+  if(s.includes(',')&&s.includes('.'))s=s.replace(/\./g,'').replace(',','.');
+  else if(s.includes(','))s=s.replace(',','.');
+  const n=parseFloat(s);return isNaN(n)?null:n;
+}
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+function importCSV(text){
+  const t=parseCSV(text);if(t.length<2)throw new Error('O arquivo não tem linhas de dados.');
+  const h=t[0].map(norm),need=['mes','natureza','grupo','conta','origem','orcado','realizado'];
+  const miss=need.filter(c=>!h.includes(c));
+  if(miss.length)throw new Error('Colunas ausentes: '+miss.join(', ')+'.');
+  const ix=c=>h.indexOf(c),rows=[],years={};
+  for(let i=1;i<t.length;i++){
+    const r=t[i],m=parseInt(r[ix('mes')],10);if(!(m>=1&&m<=12))continue;
+    const nat=norm(r[ix('natureza')]||'').startsWith('r')?'R':'D';
+    const org=norm(r[ix('origem')]||'').includes('sede')?'Sede':'Agências';
+    const conta=(r[ix('conta')]||'').trim();if(!conta)continue;
+    const cod=ix('codigo')>=0&&(r[ix('codigo')]||'').trim()?r[ix('codigo')].trim():conta;
+    let ag=ix('agencia')>=0?(r[ix('agencia')]||'').trim():'';
+    if(org==='Sede')ag='Sede';else if(!ag)ag='Agência não informada';
+    const orc=parseNum(r[ix('orcado')])||0,real=parseNum(r[ix('realizado')]);
+    if(ix('ano')>=0){const a=parseInt(r[ix('ano')],10);if(a)years[a]=(years[a]||0)+1;}
+    rows.push({m,cod,conta,nat,grupo:(r[ix('grupo')]||'Sem grupo').trim(),org,ag,orc,real});
+  }
+  if(!rows.length)throw new Error('Nenhuma linha válida foi encontrada.');
+  const yr=Object.keys(years).sort((a,b)=>years[b]-years[a])[0];
+  return {lines:buildLines(rows),year:yr?+yr:new Date().getFullYear(),n:rows.length};
+}
+
+/* ============ cálculo ============ */
+function lineFactor(l,ref,method){
+  const w=method==='ytd'?ref:method==='m3'?Math.min(3,ref):Math.min(6,ref);
+  let o=0,r=0;for(let i=ref-w;i<ref;i++){o+=l.orc[i];r+=(l.real[i]||0);}
+  return o>0?r/o:1;
+}
+function computeForecasts(){
+  const ref=S.ref,d=S.amp/100;
+  for(const l of LINES){
+    const f=Math.min(2.5,Math.max(.3,lineFactor(l,ref,S.method)));
+    const fo=l.nat==='R'?f+d:f-d,fp=l.nat==='R'?f-d:f+d;
+    l.f=f;l.fc=Array(12).fill(0);l.fco=Array(12).fill(0);l.fcp=Array(12).fill(0);
+    for(let i=ref;i<12;i++){l.fc[i]=l.orc[i]*f;l.fco[i]=l.orc[i]*Math.max(0,fo);l.fcp[i]=l.orc[i]*Math.max(0,fp);}
+  }
+}
+function getLines(o={}){
+  const nat=o.nat||S.nat;
+  return LINES.filter(l=>{
+    if(!o.skipOrg){
+      if(S.uni==='Agências'&&l.org!=='Agências')return false;
+      if(S.uni==='Sede'&&l.org!=='Sede')return false;
+      if(S.ag!=='Todas'&&l.ag!==S.ag)return false;
+    }
+    if(nat!=='T'&&l.nat!==nat)return false;
+    if(S.grp!=='Todos'&&l.grupo!==S.grp)return false;
+    if(S.conta!=='Todas'&&l.cod!==S.conta)return false;
+    return true;
+  });
+}
+function aggregate(ls){
+  const ref=S.ref,z=()=>Array(12).fill(0),o={orc:z(),real:z(),fc:z(),fco:z(),fcp:z()};
+  for(const l of ls){const s=l.sg;
+    for(let i=0;i<12;i++){
+      o.orc[i]+=s*l.orc[i];
+      if(i<ref)o.real[i]+=s*(l.real[i]||0);
+      else{o.fc[i]+=s*l.fc[i];o.fco[i]+=s*l.fco[i];o.fcp[i]+=s*l.fcp[i];}
+    }}
+  return o;
+}
+function matLevel(v){const k=S.mode==='ytd'?1:1/S.ref;v=Math.abs(v);return v>=S.matHi*1000*k?'Alto':v>=S.matMid*1000*k?'Médio':'Baixo';}
+function trendOf(impM,orcAbs,ref){
+  if(ref<2)return null;
+  const l0=Math.max(0,ref-3),p0=Math.max(0,ref-6);if(l0<=p0)return null;
+  const r=(a,b)=>{let n=0,d=0;for(let i=a;i<b;i++){n+=impM[i];d+=orcAbs[i];}return d?n/d:0;};
+  const last=r(l0,ref),prev=r(p0,l0),delta=last-prev;
+  return {last,prev,delta,dir:delta>.015?'up':delta<-.015?'down':'flat'};
+}
+function patternOf(impM,orcAbs,ref){
+  const tot=sum(impM,0,ref),base=sum(orcAbs,0,ref);
+  if(!base||Math.abs(tot)/base<.005)return {dir:'neutral',rec:false};
+  const dir=tot<0?'unf':'fav',s=dir==='fav'?1:-1,w0=Math.max(0,ref-6),n=ref-w0;
+  let c=0,same=0,mx=0;
+  for(let i=w0;i<ref;i++)if(impM[i]*s>0)c++;
+  for(let i=0;i<ref;i++){const v=impM[i]*s;if(v>0){same+=v;mx=Math.max(mx,v);}}
+  return {dir,rec:n>=3&&c/n>=.6&&same>0&&mx/same<=.5};
+}
+function analyze(ls){
+  const ref=S.ref,ytd=S.mode==='ytd';
+  const sg=ls.length&&ls.every(l=>l.nat==='D')?-1:1;
+  const nat=ls.length&&ls.every(l=>l.nat===ls[0].nat)?ls[0].nat:'T';
+  const a=aggregate(ls),P=arr=>ytd?sum(arr,0,ref):arr[ref-1];
+  const oS=P(a.orc),rS=P(a.real),imp=rS-oS,orc=sg*oS,real=sg*rS,dev=real-orc,base=Math.abs(orc);
+  const orcAn=sum(a.orc),realYtd=sum(a.real,0,ref);
+  const fcS=realYtd+sum(a.fc,ref,12),fcoS=realYtd+sum(a.fco,ref,12),fcpS=realYtd+sum(a.fcp,ref,12);
+  const impM=[],orcAbs=[],pctM=[];
+  for(let i=0;i<12;i++)orcAbs.push(Math.abs(a.orc[i]));
+  for(let i=0;i<ref;i++){impM.push(a.real[i]-a.orc[i]);pctM.push(orcAbs[i]?impM[i]/orcAbs[i]:0);}
+  const o={ls,nat,sg,a,orc,real,dev,devPct:base?dev/base:0,imp,
+    orcAn:sg*orcAn,fc:sg*fcS,fco:sg*fcoS,fcp:sg*fcpS,fcDev:sg*(fcS-orcAn),fcImp:fcS-orcAn,
+    fcRest:sg*sum(a.fc,ref,12),orcRest:sg*sum(a.orc,ref,12),realYtd:sg*realYtd,orcYtd:sg*sum(a.orc,0,ref),impM,pctM,orcAbs};
+  o.fcDevPct=o.orcAn?o.fcDev/Math.abs(o.orcAn):0;
+  o.fRest=o.orcRest?o.fcRest/o.orcRest:1;
+  o.trend=trendOf(impM,orcAbs,ref);
+  o.pattern=patternOf(impM,orcAbs,ref);
+  o.mat=matLevel(imp);
+  return o;
+}
+function groupBy(ls,fn){const m=new Map();for(const l of ls){const k=fn(l);if(!m.has(k))m.set(k,[]);m.get(k).push(l);}return m;}
+function groups(ls,fn,meta){const out=[];let ord=0;for(const [k,arr] of groupBy(ls,fn))out.push(Object.assign({key:k,ord:ord++},meta?meta(arr[0],arr):{},analyze(arr)));return out;}
+const gContas=ls=>groups(ls,l=>l.cod,l=>({cod:l.cod,conta:l.conta,grupo:l.grupo}));
+const gContaOrg=ls=>groups(ls,l=>l.cod+'|'+l.org,l=>({cod:l.cod,conta:l.conta,grupo:l.grupo,org:l.org}));
+const orgOf=c=>{const s=new Set(c.ls.map(l=>l.org));return s.size>1?'Agências e Sede':[...s][0];};
+
+/* ============ componentes visuais ============ */
+const favCls=a=>Math.abs(a.devPct)<.005?'neu':a.imp>0?'fav':'unf';
+const sc=v=>Math.abs(v)<0.5?'neu':v>0?'fav':'unf';
+const favTxt=a=>favCls(a)==='neu'?'Em linha':favCls(a)==='fav'?'Favorável':'Desfavorável';
+const favTag=a=>{const c=favCls(a);return `<span class="tag ${c}">${c==='neu'?'Em linha':c==='fav'?'Favorável':'Atenção'}</span>`;};
+const matTag=l=>`<span class="tag ${l==='Alto'?'hi':l==='Médio'?'mid':'lo'}">${l} impacto</span>`;
+function patTag(a,short){
+  const p=a.pattern;if(p.dir==='neutral')return '<span class="tag neu">Em linha</span>';
+  const fav=p.dir==='fav',r=p.rec?'recorrente':'pontual';
+  const t=short?(p.rec?'Recorrente':'Pontual'):a.nat==='D'?(fav?'Economia ':'Estouro ')+r:(fav?'Receita acima ':'Receita abaixo ')+r;
+  return `<span class="tag ${fav?'fav':'unf'}${p.rec?'':' out'}">${t}</span>`;
+}
+const arrow=v=>v>0?'<svg class="ar" viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M6 1.5l5 8.5H1z" fill="currentColor"/></svg>':v<0?'<svg class="ar" viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M6 10.5L1 2h10z" fill="currentColor"/></svg>':'';
+function spark(pctM,w=64,h=22){
+  const v=pctM.slice(-8);if(v.length<2)return '';
+  const mx=Math.max(.02,...v.map(Math.abs)),x=i=>2+i*(w-4)/(v.length-1),y=t=>h/2-t/mx*(h/2-3),last=v[v.length-1];
+  return `<svg class="sp" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><line class="gl" x1="0" x2="${w}" y1="${h/2}" y2="${h/2}" style="stroke:var(--gridline)"/><polyline points="${v.map((t,i)=>x(i).toFixed(1)+','+y(t).toFixed(1)).join(' ')}" fill="none" style="stroke:var(--neutro-line)" stroke-width="1.6"/><circle cx="${x(v.length-1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="2.6" style="fill:${last>=0?'var(--verde)':'var(--magenta)'}"/></svg>`;
+}
+function trendCell(a){
+  const t=a.trend;if(!t)return '<span class="muted">—</span>';
+  const lb=t.dir==='up'?'Melhorando':t.dir==='down'?'Piorando':'Estável',c=t.dir==='up'?'fav':t.dir==='down'?'unf':'neu';
+  return `${spark(a.pctM)}<span class="tr-l ${c}">${lb}</span>`;
+}
+function delta(a,extra){
+  const c=favCls(a);
+  return `<div class="k-d ${c}">${arrow(a.dev)}<span>${smoney(a.dev)}</span><span>(${pct(a.devPct)})</span><span class="tag ${c}">${favTxt(a)}</span></div>`;
+}
+const kcell=(l,v,d,s)=>`<div class="k"><div class="k-l">${l}</div><div class="k-v">${v}</div>${d||''}${s?`<div class="k-s">${s}</div>`:''}</div>`;
+function legend(items){return `<div class="lg">${items.map(([t,c,k])=>`<span><i class="sw ${k||''}" style="${k==='dash'?'border-color:'+c:'background:'+c}"></i>${t}</span>`).join('')}</div>`;}
+function slot(id,fn){CH[id]=fn;return `<div class="chart" data-c="${id}"></div>`;}
+function drawCharts(){$$('.chart').forEach(el=>{const fn=CH[el.dataset.c];if(fn)el.innerHTML=fn(Math.max(280,Math.floor(el.clientWidth)));});}
+function niceScale(min,max,ticks){
+  if(min===max)max=min+1;
+  const rough=(max-min)/ticks,mag=Math.pow(10,Math.floor(Math.log10(rough))),nrm=rough/mag;
+  const step=(nrm<1.5?1:nrm<3?2:nrm<7?5:10)*mag;
+  return {min:Math.floor(min/step+1e-9)*step,max:Math.ceil(max/step-1e-9)*step,step};
+}
+function lineChart(sp,W){
+  const H=sp.h||300,m={t:14,r:18,b:30,l:W<520?46:58},iw=W-m.l-m.r,ih=H-m.t-m.b,n=sp.cats.length;
+  const vs=[];sp.series.forEach(s=>s.v.forEach(v=>{if(v!=null)vs.push(v);}));
+  if(sp.band)sp.band.lo.concat(sp.band.hi).forEach(v=>{if(v!=null)vs.push(v);});
+  const scl=niceScale(Math.min(0,...vs),Math.max(0,...vs),5);
+  const x=i=>m.l+(n<2?iw/2:i*iw/(n-1)),y=v=>m.t+ih-(v-scl.min)/(scl.max-scl.min)*ih;
+  let s=`<svg class="svgc" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sp.label||'Gráfico')}">`;
+  const steps=Math.round((scl.max-scl.min)/scl.step);
+  for(let k=0;k<=steps;k++){const v=scl.min+k*scl.step;s+=`<line class="gl${Math.abs(v)<1e-6?' z':''}" x1="${m.l}" x2="${W-m.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text class="ax" x="${m.l-8}" y="${(y(v)+4).toFixed(1)}" text-anchor="end">${axis(v)}</text>`;}
+  sp.cats.forEach((c,i)=>{s+=`<text class="ax" x="${x(i).toFixed(1)}" y="${H-9}" text-anchor="middle">${c}</text>`;});
+  if(sp.ref!=null)s+=`<line class="refl" x1="${x(sp.ref).toFixed(1)}" x2="${x(sp.ref).toFixed(1)}" y1="${m.t}" y2="${m.t+ih}"/>`;
+  if(sp.band){const idx=[];sp.band.lo.forEach((v,i)=>{if(v!=null&&sp.band.hi[i]!=null)idx.push(i);});
+    if(idx.length>1){const up=idx.map(i=>x(i).toFixed(1)+','+y(sp.band.hi[i]).toFixed(1)),dn=idx.slice().reverse().map(i=>x(i).toFixed(1)+','+y(sp.band.lo[i]).toFixed(1));
+      s+=`<polygon points="${up.concat(dn).join(' ')}" style="fill:var(--verde);opacity:.16"/>`;}}
+  for(const se of sp.series){
+    let d='',pen=false;se.v.forEach((v,i)=>{if(v==null){pen=false;return;}d+=(pen?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' ';pen=true;});
+    s+=`<path d="${d}" fill="none" style="stroke:${se.c}" stroke-width="${se.w||2.6}"${se.dash?` stroke-dasharray="${se.dash}"`:''} stroke-linecap="round" stroke-linejoin="round"/>`;
+    if(se.dots)se.v.forEach((v,i)=>{if(v!=null&&(se.dots===true||se.dots(i)))s+=`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.3" style="fill:${se.c}"/>`;});
+  }
+  const cw=n<2?iw:iw/(n-1);
+  for(let i=0;i<n;i++)s+=`<rect x="${(x(i)-cw/2).toFixed(1)}" y="${m.t}" width="${cw.toFixed(1)}" height="${ih}" fill="transparent" data-tip="${esc(sp.tip(i))}"/>`;
+  return s+'</svg>';
+}
+function comboChart(sp,W){
+  const H=sp.h||270,m={t:12,r:10,b:28,l:W<520?46:58},iw=W-m.l-m.r,ih=H-m.t-m.b,bw=iw/12,id='h'+(++UID);
+  const all=sp.orc.concat(sp.val.filter(v=>v!=null));
+  const scl=niceScale(0,Math.max(...all)*1.05,4),y=v=>m.t+ih-(v-scl.min)/(scl.max-scl.min)*ih;
+  let s=`<svg class="svgc" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sp.label||'Gráfico')}"><defs><pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--verde-cl)"/><line x1="0" y1="0" x2="0" y2="6" style="stroke:var(--verde)" stroke-width="2.4"/></pattern></defs>`;
+  const steps=Math.round((scl.max-scl.min)/scl.step);
+  for(let k=0;k<=steps;k++){const v=scl.min+k*scl.step;s+=`<line class="gl${k===0?' z':''}" x1="${m.l}" x2="${W-m.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text class="ax" x="${m.l-8}" y="${(y(v)+4).toFixed(1)}" text-anchor="end">${axis(v)}</text>`;}
+  for(let i=0;i<12;i++){
+    const cx=m.l+i*bw+bw/2,v=sp.val[i];
+    s+=`<text class="ax" x="${cx.toFixed(1)}" y="${H-9}" text-anchor="middle">${MES[i]}</text>`;
+    if(v!=null)s+=`<rect x="${(cx-bw*.3).toFixed(1)}" y="${y(v).toFixed(1)}" width="${(bw*.6).toFixed(1)}" height="${Math.max(0,y(0)-y(v)).toFixed(1)}" rx="3" style="fill:${i>=sp.ref?`url(#${id})`:'var(--verde)'}"/>`;
+  }
+  const pts=sp.orc.map((v,i)=>(m.l+i*bw+bw/2).toFixed(1)+','+y(v).toFixed(1));
+  s+=`<polyline points="${pts.join(' ')}" fill="none" style="stroke:var(--verde-esc)" stroke-width="2.4" stroke-linejoin="round"/>`;
+  sp.orc.forEach((v,i)=>{s+=`<circle cx="${(m.l+i*bw+bw/2).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.2" style="fill:var(--surface);stroke:var(--verde-esc)" stroke-width="2"/>`;});
+  for(let i=0;i<12;i++)s+=`<rect x="${(m.l+i*bw).toFixed(1)}" y="${m.t}" width="${bw.toFixed(1)}" height="${ih}" fill="transparent" data-tip="${esc(sp.tip(i))}"/>`;
+  return s+'</svg>';
+}
+function wrapText(t,max){const w=t.split(' '),out=[];let cur='';for(const x of w){if((cur+' '+x).trim().length>max&&cur){out.push(cur);cur=x;}else cur=(cur+' '+x).trim();}if(cur)out.push(cur);return out;}
+function waterfall(steps,W){
+  const H=250,m={t:26,r:8,b:52,l:8},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  let cum=0;const lv=[];
+  steps.forEach(s=>{if(s.t==='total'){s.a=null;s.b=s.v;cum=s.v;lv.push(s.v);}else{s.a=cum;s.b=cum+s.v;cum=s.b;lv.push(s.a,s.b);}});
+  const lo=Math.min(...lv),hi=Math.max(...lv),pad=(hi-lo)||Math.abs(hi)||1,y0=lo-pad*.9,y1=hi+pad*.35;
+  const y=v=>m.t+ih-(v-y0)/(y1-y0)*ih,n=steps.length,bw=iw/n;
+  let s=`<svg class="svgc" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Da meta orçada ao resultado realizado">`;
+  let prev=null;
+  steps.forEach((st,i)=>{
+    const cx=m.l+i*bw+bw/2,w=Math.min(56,bw*.62),top=st.t==='total'?st.b:Math.max(st.a,st.b),bot=st.t==='total'?y0:Math.min(st.a,st.b);
+    const col=st.t==='total'?(st.real?'var(--verde-esc)':'var(--bar-orc)'):(st.fav?'var(--verde)':'var(--magenta)');
+    if(prev!=null)s+=`<line x1="${(cx-bw).toFixed(1)}" x2="${(cx-w/2).toFixed(1)}" y1="${y(prev).toFixed(1)}" y2="${y(prev).toFixed(1)}" style="stroke:var(--muted)" stroke-dasharray="3 3" opacity=".6"/>`;
+    s+=`<rect x="${(cx-w/2).toFixed(1)}" y="${y(top).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(2,y(bot)-y(top)).toFixed(1)}" rx="4" style="fill:${col}" data-tip="${esc(st.tip||'')}"/>`;
+    s+=`<text class="vl" x="${cx.toFixed(1)}" y="${(y(top)-7).toFixed(1)}" text-anchor="middle">${st.t==='total'?money(st.v):smoney(st.dv!=null?st.dv:st.v)}</text>`;
+    wrapText(st.l,W<340?11:14).forEach((ln,k)=>{s+=`<text class="ax" x="${cx.toFixed(1)}" y="${H-32+k*13}" text-anchor="middle">${esc(ln)}</text>`;});
+    prev=st.b;
+  });
+  return s+'</svg>';
+}
+
+/* barras em HTML */
+function hbPair(items){
+  const mx=Math.max(...items.map(i=>Math.max(i.o,i.r)),1);
+  return items.map(i=>{const c=Math.abs(i.dev)<.005*Math.abs(i.o)?'neu':(i.fav?'fav':'unf');
+    return `<div class="hb"><div class="hb-l">${esc(i.l)}${i.s?`<small>${esc(i.s)}</small>`:''}</div><div class="hb-t"><div class="hb-r"><i class="o" style="width:${(Math.abs(i.o)/mx*58).toFixed(1)}%"></i>${money(i.o)}</div><div class="hb-r"><i class="r" style="width:${(Math.abs(i.r)/mx*58).toFixed(1)}%"></i>${money(i.r)}</div></div><div class="hb-v ${c}">${smoney(i.dev)}</div></div>`;}).join('');
+}
+function divList(items,withTag){
+  if(!items.length)return '<p class="muted">Sem contas para exibir.</p>';
+  const mx=Math.max(...items.map(i=>Math.abs(i.imp)),1);
+  return items.map(c=>{const cl=favCls(c),w=(Math.abs(c.imp)/mx*46).toFixed(1);
+    return `<div class="dr"><div class="dr-n">${esc(c.label||c.conta)}<small>${esc(c.sub!=null?c.sub:orgOf(c))}</small></div><div class="dr-b"><b class="${c.imp>=0?'p':'n'}" style="width:${w}%"></b></div><div class="dr-v ${cl}">${smoney(c.dev)}</div>${withTag===false?'':`<div class="dr-t">${favTag(c)}</div>`}</div>`;}).join('');
+}
+const NATL={T:{n:'Resultado',art:'o resultado',orc:'do resultado orçado'},R:{n:'Receita',art:'a receita',orc:'da receita orçada'},D:{n:'Despesa',art:'a despesa',orc:'da despesa orçada'}};
+const perLabel=()=>S.mode==='ytd'?'acumulado até '+MESF[S.ref-1]:'em '+MESF[S.ref-1];
+const perShort=()=>S.mode==='ytd'?'Jan a '+MES[S.ref-1]:MES[S.ref-1];
+const goLink=(t,l)=>`<button class="lnk" type="button" data-go="${t}">${l}</button>`;
+const pageHead=(t,q)=>`<div class="ph"><h2>${t}</h2><p>${q}</p></div>`;
+const tw=h=>`<div class="tw">${h}</div>`;
+const empty=()=>`<div class="empty"><h3>Nenhum dado para esta combinação de filtros</h3><p>Ajuste o mês, a unidade, o grupo ou a conta, ou volte aos filtros originais.</p><button class="btn" type="button" data-clear="1">Limpar filtros</button></div>`;
+
+/* séries cumulativas para gráficos de evolução */
+function cumSeries(A){
+  const a=A.a,sg=A.sg,ref=S.ref,cO=[],cR=[],cF=[],cFo=[],cFp=[],tO=[],tR=[],tF=[];
+  let o=0,r=0;
+  for(let i=0;i<12;i++){o+=sg*a.orc[i];cO.push(o);if(i<ref){r+=sg*a.real[i];cR.push(r);}else cR.push(null);}
+  let f=cR[ref-1],fo=f,fp=f;
+  for(let i=0;i<12;i++){
+    if(i<ref-1){cF.push(null);cFo.push(null);cFp.push(null);}
+    else if(i===ref-1){cF.push(f);cFo.push(f);cFp.push(f);}
+    else{f+=sg*a.fc[i];fo+=sg*a.fco[i];fp+=sg*a.fcp[i];cF.push(f);cFo.push(fo);cFp.push(fp);}
+  }
+  return {cO,cR,cF,cFo,cFp};
+}
+
+/* ============ Página 1: Visão executiva ============ */
+function narrative(ls,A){
+  const nl=NATL[S.nat],cs=gContas(ls),co=gContaOrg(ls),ref=S.ref;
+  const cl=favCls(A),pos=cs.filter(c=>c.imp>0).sort((a,b)=>b.imp-a.imp),neg=cs.filter(c=>c.imp<0).sort((a,b)=>a.imp-b.imp);
+  const topF=pos[0],topU=neg[0];
+  const best=c=>co.filter(x=>x.cod===c.cod).sort((a,b)=>Math.abs(b.imp)-Math.abs(a.imp))[0];
+  const orgTxt=c=>{const b=best(c);const many=new Set(c.ls.map(l=>l.org)).size>1;return many?'':(b.org==='Sede'?' na Sede':' nas Agências');};
+  const vs=`${money(Math.abs(A.dev))} ${A.dev>=0?'acima':'abaixo'} do orçamento`;
+  const P=[];
+  let p1=`${perLabel()[0].toUpperCase()+perLabel().slice(1)}, ${nl.art} está <b class="${cl}">${vs}</b> (${pct(A.devPct)}).`;
+  if(A.imp>=0&&topF)p1+=` O desempenho é impulsionado principalmente por <b>${esc(topF.conta)}</b>${orgTxt(topF)}, com efeito favorável de ${money(topF.imp)}.`;
+  else if(A.imp<0&&topU)p1+=` A pressão vem principalmente de <b>${esc(topU.conta)}</b>${orgTxt(topU)}, com efeito desfavorável de ${money(-topU.imp)}.`;
+  P.push(p1);
+  const sav=cs.filter(c=>c.nat==='D'&&c.pattern.dir==='fav'&&c.pattern.rec&&(!topF||c.cod!==topF.cod)).sort((a,b)=>b.imp-a.imp)[0];
+  let p2='';
+  if(sav)p2+=`<b>${esc(sav.conta)}</b> também apresenta economia recorrente. `;
+  const alt=A.imp>=0?topU:topF;
+  if(alt&&A.imp>=0&&matLevel(alt.imp)!=='Baixo'){
+    const b=best(alt),t=b.trend,tt=t?(t.dir==='down'?', com desvio em crescimento':t.dir==='up'?', com sinais de melhora':', com tendência estável'):'';
+    p2+=`Por outro lado, <b>${esc(alt.conta)}</b>${orgTxt(alt)} apresenta desvio desfavorável de ${money(-alt.imp)}${tt}. `;
+  }else if(alt&&A.imp<0){p2+=`Em contrapartida, <b>${esc(alt.conta)}</b>${orgTxt(alt)} entrega desvio favorável de ${money(alt.imp)}. `;}
+  const fcl=sc(A.fcImp),mt=S.method==='ytd'?'acumulada no ano':S.method==='m3'?'dos últimos 3 meses':'dos últimos 6 meses';
+  p2+=`Mantida a performance ${mt}, o forecast indica fechamento <b class="${fcl}">${money(Math.abs(A.fcDev))} ${A.fcDev>=0?'acima':'abaixo'}</b> ${nl.orc}.`;
+  P.push(p2);
+  return P.map(x=>`<p>${x}</p>`).join('');
+}
+function pageExec(){
+  CH={};const ls=getLines();if(!ls.length)return empty();
+  const LR=ls.filter(l=>l.nat==='R'),LD=ls.filter(l=>l.nat==='D');
+  const A=analyze(ls),R=LR.length?analyze(LR):null,D=LD.length?analyze(LD):null,nl=NATL[S.nat];
+  const range=[Math.min(A.fcp,A.fco),Math.max(A.fcp,A.fco)],fc=sc(A.fcImp);
+  let h=pageHead('Visão executiva','Como estamos e como devemos fechar?');
+  h+=`<div class="top-grid"><div class="narr"><h3>Leitura executiva</h3>${narrative(ls,A)}</div>
+  <div class="hero"><div class="hl">${nl.n} forecast para dezembro</div><div class="hv">${money(A.fc)}</div>
+  <div class="hd">${A.fcDev>=0?'+':'−'}${money(Math.abs(A.fcDev)).replace('−','')} vs orçamento (${pct(A.fcDevPct)})</div>
+  <div class="hs">Orçado no ano: ${money(A.orcAn)}</div>
+  <div class="hr">Faixa de fechamento: ${money(range[0])} a ${money(range[1])}<br><span style="opacity:.85">Cenários com ±${nfc(S.amp,1)} p.p. de performance nos meses restantes</span></div></div></div>`;
+  const c4=A.imp>=0?'fav':'unf';
+  h+=`<div class="sec"><div class="kstrip">
+   ${kcell(nl.n+' realizado',money(A.real),delta(A),`Orçado ${money(A.orc)}, ${perShort()}`)}
+   ${R?kcell('Receita realizada',money(R.real),delta(R),`Orçado ${money(R.orc)}`):kcell('Receita','—','','Fora do filtro de natureza')}
+   ${D?kcell('Despesa realizada',money(D.real),delta(D),`Orçado ${money(D.orc)}`):kcell('Despesa','—','','Fora do filtro de natureza')}
+   ${kcell('Resultado vs orçamento',`<span class="${c4}">${smoney(A.imp)}</span>`,`<div class="mr">${R?`<span>Receitas</span><b class="${sc(R.imp)}">${smoney(R.imp)}</b>`:''}${D?`<span>Despesas</span><b class="${sc(D.imp)}">${smoney(D.imp)}</b>`:''}</div>`,'Efeito no resultado, impacto acumulado')}
+   ${kcell('Forecast anual',R||D?'':'—',`<div class="mr">${R?`<span>Receita</span><b>${money(R.fc)}</b><em class="${sc(R.fcImp)}">${smoney(R.fcDev)} vs orçamento</em>`:''}${D?`<span>Despesa</span><b>${money(D.fc)}</b><em class="${sc(D.fcImp)}">${smoney(D.fcDev)} vs orçamento</em>`:''}</div>`,'')}
+  </div></div>`;
+  /* evolução e ponte */
+  const cs=cumSeries(A),ref=S.ref;
+  const tipEv=i=>{const dv=i<ref?cs.cR[i]-cs.cO[i]:cs.cF[i]-cs.cO[i];return `<b>${MES[i]}</b><div class="tr"><span>Orçado</span><b>${money(cs.cO[i])}</b></div>`+(i<ref?`<div class="tr"><span>Realizado</span><b>${money(cs.cR[i])}</b></div>`:`<div class="tr"><span>Forecast</span><b>${money(cs.cF[i])}</b></div><div class="tr"><span>Faixa</span><b>${money(Math.min(cs.cFp[i],cs.cFo[i]))} a ${money(Math.max(cs.cFp[i],cs.cFo[i]))}</b></div>`)+`<div class="tr"><span>Desvio acumulado</span><b>${smoney(A.sg*dv)}</b></div>`;};
+  const stp=S.nat==='T'?[{l:'Resultado orçado',t:'total',v:A.orc,tip:'Resultado orçado'},{l:'Receitas',t:'delta',v:R.imp,fav:R.imp>=0,tip:'Efeito das receitas no resultado'},{l:'Despesas',t:'delta',v:D.imp,fav:D.imp>=0,tip:'Efeito das despesas no resultado'},{l:'Resultado realizado',t:'total',v:A.real,real:1,tip:'Resultado realizado'}]
+    :[{l:nl.n+' orçada',t:'total',v:A.orc},{l:'Desvio',t:'delta',v:A.dev,fav:A.imp>=0},{l:nl.n+' realizada',t:'total',v:A.real,real:1}];
+  h+=`<div class="sec"><h3>Evolução do resultado</h3><p class="lead">Quando surgiu o desvio, se está aumentando e qual a trajetória esperada até dezembro.</p>
+  <div class="g2"><div class="pn"><h4>${nl.n} acumulado: orçado, realizado e forecast</h4><div class="sub">Janeiro a dezembro de ${ANO}. A faixa sombreada mostra os cenários otimista e pessimista.</div>
+  ${legend([['Orçado','var(--neutro-line)','line'],['Realizado','var(--verde)','line'],['Forecast','var(--verde)','dash'],['Faixa de cenários','var(--verde)']])}
+  ${slot('ev',W=>lineChart({cats:MES,ref:ref-1,label:nl.n+' acumulado',h:300,series:[{c:'var(--neutro-line)',v:cs.cO,w:2.2,dots:i=>i<ref},{c:'var(--verde)',v:cs.cF,dash:'6 5',w:2.6},{c:'var(--verde)',v:cs.cR,w:3.2,dots:i=>i===ref-1}],band:{lo:cs.cFp.map((v,i)=>v==null?null:Math.min(v,cs.cFo[i])),hi:cs.cFp.map((v,i)=>v==null?null:Math.max(v,cs.cFo[i]))},tip:tipEv},W))}</div>
+  <div class="pn"><h4>Da meta ao realizado</h4><div class="sub">${S.mode==='ytd'?'Acumulado':'Mês'} de referência: ${perShort()}.</div>${slot('wf',W=>waterfall(stp,W))}<div class="note">Eixo truncado para destacar os desvios.</div></div></div></div>`;
+  /* drivers */
+  const top=(L)=>gContas(L).sort((a,b)=>Math.abs(b.imp)-Math.abs(a.imp)).slice(0,5);
+  h+=`<div class="sec"><h3>Principais drivers dos desvios</h3><p class="lead">As cinco contas que mais movem o resultado em cada natureza. O detalhamento completo está nas páginas de receitas e despesas.</p><div class="g2e">
+  <div class="pn"><h4>Receitas</h4><div class="sub">Desvio vs orçamento, ${perShort()}</div>${R?divList(top(LR)):'<p class="muted">Fora do filtro de natureza.</p>'}<div style="margin-top:8px">${goLink('rec','Ver todas as receitas')}</div></div>
+  <div class="pn"><h4>Despesas</h4><div class="sub">Desvio vs orçamento, ${perShort()}</div>${D?divList(top(LD)):'<p class="muted">Fora do filtro de natureza.</p>'}<div style="margin-top:8px">${goLink('desp','Ver todas as despesas')}</div></div></div></div>`;
+  /* origem */
+  h+=`<div class="sec"><h3>De onde está vindo o desvio?</h3><p class="lead">Contribuição de cada origem para o desvio total do resultado. Esta seção considera toda a cooperativa, independentemente dos filtros de unidade e agência.</p><div class="pn">${origemTable()}<div style="margin-top:10px">${goLink('org','Ver análise por agência')}</div></div></div>`;
+  /* atenção */
+  const co=gContaOrg(ls),att=co.filter(c=>c.imp<0).sort((a,b)=>a.imp-b.imp).slice(0,8);
+  h+=`<div class="sec"><h3>Pontos de atenção</h3><p class="lead">Desvios desfavoráveis ordenados por relevância financeira em R$, e não por percentual.</p><div class="pn">${att.length?tw(`<table class="t"><thead><tr><th>Conta</th><th>Origem</th><th class="n">Orçado</th><th class="n">Realizado</th><th class="n">Desvio R$</th><th class="n">Desvio %</th><th>Tendência</th><th>Materialidade</th></tr></thead><tbody>${att.map(c=>`<tr><td>${esc(c.conta)}<small>${patTag(c)}</small></td><td>${c.org}</td><td class="n">${mil(c.orc)}</td><td class="n">${mil(c.real)}</td><td class="n unf">${smil(c.dev)}</td><td class="n unf">${pct(c.devPct)}</td><td>${trendCell(c)}</td><td>${matTag(c.mat)}</td></tr>`).join('')}</tbody></table><div class="note">Valores em R$ mil. Materialidade definida em Parâmetros.</div>`):'<p class="muted">Nenhum desvio desfavorável no período.</p>'}</div></div>`;
+  /* destaques */
+  const hi=co.filter(c=>c.imp>0).sort((a,b)=>b.imp-a.imp).slice(0,6);
+  const ags=groups(getLines({skipOrg:true}).filter(l=>l.org==='Agências'),l=>l.ag,l=>({ag:l.ag})).filter(g=>g.imp>0).sort((a,b)=>b.devPct-a.devPct).slice(0,3);
+  h+=`<div class="sec"><h3>Destaques positivos</h3><p class="lead">Onde estamos performando bem: receitas acima do orçamento, economias e tendências favoráveis.</p>${hi.length?`<div class="hlg">${hi.map(c=>`<div class="hli"><div class="hli-t">${esc(c.conta)}</div><div class="hli-s">${c.org==='Sede'?'Sede/Retaguarda':'Agências'}, ${c.nat==='R'?'receita':'despesa'}</div><div class="hli-v fav">${smoney(c.imp)}<small>${pct(Math.abs(c.devPct))} ${c.nat==='R'?'acima':'abaixo'} do orçado</small></div><div class="hli-g">${patTag(c)}${c.trend&&c.trend.dir==='up'?'<span class="tag fav">Tendência favorável</span>':''}</div></div>`).join('')}</div>`:'<p class="muted">Nenhum desvio favorável no período.</p>'}
+  ${ags.length?`<div class="insight"><b>Agências de destaque no resultado:</b> ${ags.map(g=>`${esc(g.ag)}, ${pct(g.devPct)} vs orçado`).join('; ')}.</div>`:''}</div>`;
+  /* projeção */
+  const row=(n,a)=>`<tr><td>${n}</td><td class="n">${money(a.orcAn)}</td><td class="n">${money(a.fc)}</td><td class="n ${sc(a.fcImp)}">${smoney(a.fcDev)} <small style="display:inline">(${pct(a.fcDevPct)})</small></td><td class="n muted">${money(Math.min(a.fcp,a.fco))} a ${money(Math.max(a.fcp,a.fco))}</td></tr>`;
+  h+=`<div class="sec"><h3>Projeção de fechamento</h3><p class="lead">Conecta o acompanhamento atual ao fechamento do exercício. Método: ${S.method==='ytd'?'performance acumulada no ano':S.method==='m3'?'performance dos últimos 3 meses':'performance dos últimos 6 meses'}. ${goLink('fc','Ajustar método e cenários')}</p><div class="pn">${tw(`<table class="t"><thead><tr><th>Indicador</th><th class="n">Orçamento</th><th class="n">Forecast</th><th class="n">Desvio</th><th class="n">Faixa de cenários</th></tr></thead><tbody>${R?row('Receita',R):''}${D?row('Despesa',D):''}${S.nat==='T'?row('Resultado',A):''}</tbody></table>`)}</div></div>`;
+  return h;
+}
+function origemTable(){
+  const lo=getLines({skipOrg:true});if(!lo.length)return '<p class="muted">Sem dados.</p>';
+  const tot=analyze(lo),os=['Agências','Sede'].filter(o=>lo.some(l=>l.org===o)).map(o=>{const L=lo.filter(l=>l.org===o);return {o,A:analyze(L),R:L.some(l=>l.nat==='R')?analyze(L.filter(l=>l.nat==='R')):null,D:L.some(l=>l.nat==='D')?analyze(L.filter(l=>l.nat==='D')):null};});
+  const tR=lo.some(l=>l.nat==='R')?analyze(lo.filter(l=>l.nat==='R')):null,tD=lo.some(l=>l.nat==='D')?analyze(lo.filter(l=>l.nat==='D')):null;
+  const cell=(a,c)=>a?`<td class="n ${favCls(a)}">${smoney(a.dev)}</td>`:'<td class="n muted">—</td>';
+  const r=x=>`<tr><td>${x.o==='Sede'?'Sede/Retaguarda':x.o}</td>${cell(x.R)}${cell(x.D)}<td class="n ${favCls(x.A)}"><b>${smoney(x.A.imp)}</b></td><td class="n">${Math.abs(tot.imp)<1?'—':pct(x.A.imp/tot.imp,0)}${Math.abs(tot.imp)<1?'':`<i class="cb" style="width:${Math.min(70,Math.abs(x.A.imp/tot.imp)*40)}px;background:${x.A.imp/tot.imp>=0?'var(--verde)':'var(--magenta)'}"></i>`}</td></tr>`;
+  return tw(`<table class="t"><thead><tr><th>Origem</th><th class="n">Receitas, desvio</th><th class="n">Despesas, desvio</th><th class="n">Resultado, desvio</th><th class="n">Contribuição para o desvio total</th></tr></thead><tbody>${os.map(r).join('')}<tr class="tot"><td>Cooperativa</td>${cell(tR)}${cell(tD)}<td class="n ${favCls(tot)}">${smoney(tot.imp)}</td><td class="n">100%</td></tr></tbody></table><div class="note">Desvio de despesas = realizado menos orçado, então valor negativo é favorável. Resultado, desvio = efeito líquido no resultado.</div>`);
+}
+
+/* ============ Páginas 2 e 3: Receitas e Despesas ============ */
+function sortRows(rows){
+  const {k,d}=S.sort,g={ord:r=>r.ord,grupo:r=>r.grupo,conta:r=>r.conta,org:r=>r.org,orc:r=>r.orc,real:r=>r.real,dev:r=>r.dev,devPct:r=>r.devPct,fc:r=>r.fc,imp:r=>Math.abs(r.imp)}[k]||(r=>r.ord);
+  return rows.slice().sort((a,b)=>{const x=g(a),y=g(b);return (typeof x==='string'?x.localeCompare(y,'pt-BR'):x-y)*d;});
+}
+function th(k,l,cls,st){return `<th class="${cls||''}" aria-sort="${st.k===k?(st.d>0?'ascending':'descending'):'none'}"><button type="button" data-sort="${k}">${l}</button></th>`;}
+function detRow(a,child,x){
+  const cl=favCls(a);
+  if(child)return `<tr class="child"><td></td><td class="nm">${esc(agLabel(a.ag))}</td><td></td><td class="n">${mil(a.orc)}</td><td class="n">${mil(a.real)}</td><td class="n ${cl}">${smil(a.dev)}</td><td class="n ${cl}">${pct(a.devPct)}</td><td class="n">${mil(a.fc)}</td><td>${matTag(a.mat)}</td><td>${patTag(a)}</td></tr>`;
+  const canX=a.org==='Agências'&&a.ls.length>1;
+  return `<tr class="${canX?'xp':''}"${canX?` data-x="${esc(a.cod+'|'+a.org)}" tabindex="0" role="button" aria-expanded="${x}"`:''}><td>${esc(a.grupo)}</td><td class="nm"><span class="chev">${canX?'▸':''}</span>${esc(a.conta)}</td><td>${a.org==='Sede'?'Sede':'Agências'}</td><td class="n">${mil(a.orc)}</td><td class="n">${mil(a.real)}</td><td class="n ${cl}">${smil(a.dev)}</td><td class="n ${cl}">${pct(a.devPct)}</td><td class="n">${mil(a.fc)}</td><td>${matTag(a.mat)}</td><td>${patTag(a)}</td></tr>`;
+}
+function pageNature(nat){
+  CH={};const ls=getLines({nat});if(!ls.length)return empty();
+  const A=analyze(ls),R=nat==='R',nm=R?'Receita':'Despesa',fcl=sc(A.fcImp);
+  let h=pageHead(R?'Análise de receitas':'Análise de despesas',R?'Quais receitas estão explicando o desempenho acima ou abaixo do orçamento?':'Onde estão os principais desvios de despesas e qual o impacto esperado no fechamento?');
+  h+=`<div class="kstrip">
+   ${kcell(nm+' realizada',money(A.real),'',perShort())}
+   ${kcell(nm+' orçada',money(A.orc),'',perShort())}
+   ${kcell('Desvio em R$',`<span class="${favCls(A)}">${smoney(A.dev)}</span>`,`<div class="k-d ${favCls(A)}">${arrow(A.dev)}<span class="tag ${favCls(A)}">${favTxt(A)}</span></div>`,'Realizado menos orçado')}
+   ${kcell('Desvio em %',`<span class="${favCls(A)}">${pct(A.devPct)}</span>`,'','Sobre o orçado no período')}
+   ${kcell('Forecast anual',money(A.fc),'',`Orçamento anual ${money(A.orcAn)}`)}
+   ${kcell(R?'Forecast vs orçamento':(A.fcDev<=0?'Economia projetada':'Estouro projetado'),`<span class="${fcl}">${smoney(A.fcDev)}</span>`,`<div class="k-d ${fcl}">${arrow(A.fcDev)}<span>${pct(A.fcDevPct)}</span></div>`,'Fechamento em dezembro')}
+  </div>`;
+  const gr=groups(ls,l=>l.grupo,l=>({grupo:l.grupo}));
+  const cs=gContas(ls).sort((a,b)=>Math.abs(b.imp)-Math.abs(a.imp)).slice(0,10);
+  h+=`<div class="sec"><div class="g2e">
+  <div class="pn"><h4>Orçado × realizado por grupo</h4><div class="sub">${perShort()}. Identifica quais grupos estão ${R?'acima ou abaixo da expectativa':'com economia ou estouro'}.</div>${legend([['Orçado','var(--bar-orc)'],['Realizado','var(--verde)']])}${hbPair(gr.map(g=>({l:g.grupo,o:g.orc,r:g.real,dev:g.dev,fav:g.imp>0})))}</div>
+  <div class="pn"><h4>Principais desvios por conta</h4><div class="sub">Efeito no resultado, ${perShort()}. Barras à direita ajudam o resultado, à esquerda prejudicam.</div>${divList(cs,true)}</div></div></div>`;
+  const ref=S.ref,a=A.a,sg=A.sg,val=[],orc=[];
+  for(let i=0;i<12;i++){orc.push(sg*a.orc[i]);val.push(i<ref?sg*a.real[i]:sg*a.fc[i]);}
+  const tipM=i=>`<b>${MES[i]}</b><div class="tr"><span>Orçado</span><b>${money(orc[i])}</b></div><div class="tr"><span>${i<ref?'Realizado':'Forecast'}</span><b>${money(val[i])}</b></div><div class="tr"><span>Desvio</span><b>${smoney(val[i]-orc[i])}</b></div>`;
+  const og=groups(ls,l=>l.org,l=>({org:l.org}));
+  h+=`<div class="sec"><div class="g2">
+  <div class="pn"><h4>Evolução mensal</h4><div class="sub">${nm} orçada × realizada. Os meses futuros mostram o forecast.</div>${legend([['Orçado','var(--verde-esc)','line'],['Realizado','var(--verde)'],['Forecast','var(--verde)','hatch']])}${slot('mm',W=>comboChart({orc,val,ref,label:'Evolução mensal',tip:tipM},W))}</div>
+  <div class="pn"><h4>Agências × Sede</h4><div class="sub">Onde ${R?'as receitas estão sendo geradas':'estão as despesas'}, ${perShort()}.</div>${legend([['Orçado','var(--bar-orc)'],['Realizado','var(--verde)']])}${hbPair(og.map(g=>({l:g.org==='Sede'?'Sede/Retaguarda':'Agências',o:g.orc,r:g.real,dev:g.dev,fav:g.imp>0,s:'Desvio '+pct(g.devPct)})))}</div></div></div>`;
+  /* tabela detalhada */
+  const rows=sortRows(gContaOrg(ls));
+  let body='';
+  for(const r of rows){const key=r.cod+'|'+r.org,x=S.exp.has(key);body+=detRow(r,false,x);
+    if(x&&r.org==='Agências')body+=r.ls.map(l=>analyze([l])).sort((p,q)=>Math.abs(q.imp)-Math.abs(p.imp)).map(c=>detRow(c,true)).join('');}
+  const st=S.sort;
+  h+=`<div class="sec"><h3>Detalhamento por conta</h3><p class="lead">Selecione uma linha de agências para abrir o detalhe por agência. ${R?'':'A coluna de padrão separa economia e estouro recorrentes dos pontuais.'} Valores em R$ mil.</p><div class="pn">${tw(`<table class="t"><thead><tr>${th('grupo','Grupo','',st)}${th('conta','Conta','',st)}${th('org','Origem','',st)}${th('orc','Orçado','n',st)}${th('real','Realizado','n',st)}${th('dev','Desvio R$','n',st)}${th('devPct','Desvio %','n',st)}${th('fc','Forecast','n',st)}${th('imp','Materialidade','',st)}<th>Padrão</th></tr></thead><tbody>${body}<tr class="tot"><td colspan="3">Total</td><td class="n">${mil(A.orc)}</td><td class="n">${mil(A.real)}</td><td class="n ${favCls(A)}">${smil(A.dev)}</td><td class="n ${favCls(A)}">${pct(A.devPct)}</td><td class="n">${mil(A.fc)}</td><td>${matTag(A.mat)}</td><td>${patTag(A)}</td></tr></tbody></table>`)}</div></div>`;
+  return h;
+}
+
+/* ============ Página 4: Agências × Sede ============ */
+function pageOrigem(){
+  CH={};const ls=getLines({skipOrg:true});if(!ls.length)return empty();
+  const nl=NATL[S.nat],A=analyze(ls),AG=analyze(ls.filter(l=>l.org==='Agências')),SE=analyze(ls.filter(l=>l.org==='Sede'));
+  let h=pageHead('Agências × Sede','Onde o desempenho orçamentário está acontecendo?');
+  h+=`<div class="insight" style="margin:0 0 16px">Esta página considera toda a cooperativa e não é afetada pelos filtros de unidade e agência.</div>`;
+  const share=(x)=>Math.abs(A.imp)<1?'—':pct(x.imp/A.imp,0);
+  h+=`<div class="kstrip">
+   ${kcell(nl.n+' das Agências',money(AG.real),delta(AG),`Orçado ${money(AG.orc)}. Contribuição ${share(AG)}`)}
+   ${kcell(nl.n+' da Sede',money(SE.real),delta(SE),`Orçado ${money(SE.orc)}. Contribuição ${share(SE)}`)}
+   ${kcell(nl.n+' da cooperativa',money(A.real),delta(A),`Orçado ${money(A.orc)}`)}
+  </div>`;
+  /* matriz */
+  const nats=S.nat==='T'?['R','D']:[S.nat];
+  const mrow=(lb,n,first)=>{const L=ls.filter(l=>l.nat===n),T=analyze(L),oo=['Agências','Sede'].map(o=>({o,a:L.some(l=>l.org===o)?analyze(L.filter(l=>l.org===o)):null}));
+    return oo.map((x,i)=>x.a?`<tr><td>${i===0?lb:''}</td><td>${x.o==='Sede'?'Sede/Retaguarda':x.o}</td><td class="n">${mil(x.a.orc)}</td><td class="n">${mil(x.a.real)}</td><td class="n ${favCls(x.a)}">${smil(x.a.dev)}</td><td class="n ${favCls(x.a)}">${pct(x.a.devPct)}</td><td class="n">${Math.abs(T.dev)<1?'—':pct(x.a.dev/T.dev,0)}</td></tr>`:'').join('')+`<tr class="tot"><td></td><td>Total</td><td class="n">${mil(T.orc)}</td><td class="n">${mil(T.real)}</td><td class="n ${favCls(T)}">${smil(T.dev)}</td><td class="n ${favCls(T)}">${pct(T.devPct)}</td><td class="n">100%</td></tr>`;};
+  const resRows=S.nat==='T'?['Agências','Sede'].map((o,i)=>{const x=o==='Agências'?AG:SE;return `<tr><td>${i===0?'Resultado':''}</td><td>${o==='Sede'?'Sede/Retaguarda':o}</td><td class="n">${mil(x.orc)}</td><td class="n">${mil(x.real)}</td><td class="n ${favCls(x)}">${smil(x.dev)}</td><td class="n ${favCls(x)}">${pct(x.devPct)}</td><td class="n">${share(x)}</td></tr>`;}).join('')+`<tr class="tot"><td></td><td>Total</td><td class="n">${mil(A.orc)}</td><td class="n">${mil(A.real)}</td><td class="n ${favCls(A)}">${smil(A.dev)}</td><td class="n ${favCls(A)}">${pct(A.devPct)}</td><td class="n">100%</td></tr>`:'';
+  h+=`<div class="sec"><h3>Receitas, despesas e resultado por origem</h3><p class="lead">Desvio de despesas = realizado menos orçado. O resultado da Sede é negativo por natureza, pois concentra custos de captação, provisões e tecnologia.</p><div class="pn">${tw(`<table class="t"><thead><tr><th>Indicador</th><th>Origem</th><th class="n">Orçado</th><th class="n">Realizado</th><th class="n">Desvio R$</th><th class="n">Desvio %</th><th class="n">Contribuição</th></tr></thead><tbody>${nats.map(n=>mrow(n==='R'?'Receitas':'Despesas',n)).join('')}${resRows}</tbody></table><div class="note">Valores em R$ mil, ${perShort()}.</div>`)}</div></div>`;
+  /* desvio por origem + evolução */
+  const mk=(l,x,sub)=>({label:l,sub,imp:x.imp,dev:x.dev,devPct:x.devPct});
+  const items=[];
+  for(const n of nats){const L=ls.filter(l=>l.nat===n);for(const o of ['Agências','Sede']){const LL=L.filter(l=>l.org===o);if(LL.length){const x=analyze(LL);items.push(Object.assign({label:(n==='R'?'Receitas':'Despesas')+', '+(o==='Sede'?'Sede':'Agências'),sub:pct(x.devPct)+' vs orçado'},x));}}}
+  if(S.nat==='T')items.push(Object.assign({label:'Resultado, Agências',sub:pct(AG.devPct)+' vs orçado'},AG),Object.assign({label:'Resultado, Sede',sub:pct(SE.devPct)+' vs orçado'},SE));
+  const cum=x=>{let c=0;return x.impM.map(v=>c+=v);};
+  const cT=cum(A),cA=cum(AG),cS=cum(SE),ref=S.ref;
+  const pad=v=>v.concat(Array(12-v.length).fill(null));
+  const tipO=i=>`<b>${MES[i]}, desvio acumulado</b><div class="tr"><span>Agências</span><b>${smoney(cA[i])}</b></div><div class="tr"><span>Sede</span><b>${smoney(cS[i])}</b></div><div class="tr"><span>Cooperativa</span><b>${smoney(cT[i])}</b></div>`;
+  h+=`<div class="sec"><div class="g2e">
+  <div class="pn"><h4>Desvio por origem</h4><div class="sub">Efeito no resultado, ${perShort()}.</div>${divList(items,false)}</div>
+  <div class="pn"><h4>Evolução mensal do desvio</h4><div class="sub">Desvio acumulado do ${nl.n.toLowerCase()} vs orçamento, por origem.</div>${legend([['Agências','var(--verde)','line'],['Sede','var(--magenta)','line'],['Cooperativa','var(--neutro-line)','dash']])}${slot('oe',W=>lineChart({cats:MES.slice(0,ref),label:'Evolução do desvio por origem',h:260,series:[{c:'var(--verde)',v:cA,dots:true},{c:'var(--magenta)',v:cS,dots:true},{c:'var(--neutro-line)',v:cT,dash:'5 4',w:2.2}],tip:tipO},W))}</div></div></div>`;
+  /* agências individualmente */
+  const ag=groups(ls.filter(l=>l.org==='Agências'),l=>l.ag,l=>({ag:l.ag})).sort((a,b)=>b.devPct-a.devPct);
+  const stt=a=>a.devPct>.02?['fav','Acima do orçado']:a.devPct<-.02?['unf','Abaixo do esperado']:['neu','Em linha'];
+  const posSum=sum(ag.filter(a=>a.imp>0).map(a=>a.imp)),top3=ag.slice().sort((a,b)=>b.imp-a.imp).slice(0,3),t3=posSum>0?sum(top3.filter(a=>a.imp>0).map(a=>a.imp))/posSum:0;
+  const bad=ag.filter(a=>a.devPct<-.02);
+  h+=`<div class="sec"><h3>Agências individualmente</h3><p class="lead">${nl.n} de cada agência contra o orçamento, ${perShort()}. Resultado considera as receitas e despesas alocadas à agência.</p>
+  <div class="g2"><div class="pn">${tw(`<table class="t"><thead><tr><th>Agência</th><th class="n">Orçado</th><th class="n">Realizado</th><th class="n">Desvio R$</th><th class="n">Desvio %</th><th>Status</th></tr></thead><tbody>${ag.map(a=>{const [c,t]=stt(a);return `<tr><td>${esc(a.ag)}</td><td class="n">${mil(a.orc)}</td><td class="n">${mil(a.real)}</td><td class="n ${c}">${smil(a.dev)}</td><td class="n ${c}">${pct(a.devPct)}</td><td><span class="tag ${c}">${t}</span></td></tr>`;}).join('')}</tbody></table><div class="note">Valores em R$ mil. Status: acima ou abaixo de 2% do orçado.</div>`)}</div>
+  <div class="pn"><h4>Concentração dos desvios</h4><div class="sub">Efeito no resultado por agência</div>${divList(ag.map(a=>Object.assign({},a,{label:a.ag,sub:pct(a.devPct)})).sort((p,q)=>q.imp-p.imp),false)}</div></div>
+  <div class="insight"><b>Leitura:</b> ${top3.filter(a=>a.imp>0).length?`as ${top3.filter(a=>a.imp>0).length} agências com maior desvio favorável (${top3.filter(a=>a.imp>0).map(a=>esc(a.ag.replace(/ \(.*/,''))).join(', ')}) respondem por ${nfc(t3*100,0)}% do desvio favorável das agências. São referências para replicar boas práticas. `:''}${bad.length?`${bad.length} ${bad.length>1?'agências estão':'agência está'} abaixo do esperado (${bad.map(a=>esc(a.ag.replace(/ \(.*/,''))).join(', ')}) e ${bad.length>1?'merecem':'merece'} acompanhamento.`:'Nenhuma agência está abaixo do esperado no período.'}</div></div>`;
+  return h;
+}
+
+/* ============ Página 5: Forecast ============ */
+const METH={ytd:'Acumulado no ano',m3:'Últimos 3 meses',m6:'Últimos 6 meses'};
+function pageForecast(){
+  CH={};const ls=getLines();if(!ls.length)return empty();
+  const A=analyze(ls),nl=NATL[S.nat],ref=S.ref,cs=cumSeries(A);
+  let h=pageHead('Forecast','Como devemos fechar o ano e quais fatores estão direcionando essa projeção?');
+  h+=`<div class="pn"><div class="ctrl">
+   <div class="f"><span>Base do fator de performance</span><div class="seg">${Object.keys(METH).map(k=>`<button type="button" data-method="${k}" aria-pressed="${S.method===k}">${METH[k]}</button>`).join('')}</div></div>
+   <label class="f"><span>Amplitude dos cenários: ±<output id="ampo">${nfc(S.amp,1)}</output> p.p.</span><input type="range" id="f-amp" data-f="amp" min="0" max="10" step=".5" value="${S.amp}"></label>
+  </div></div>`;
+  h+=`<div class="sec"><div class="kstrip">
+   ${kcell(nl.n+' orçado no ano',money(A.orcAn),'','Meta do exercício')}
+   ${kcell('Pessimista',money(A.fcp),`<div class="k-d ${sc(A.sg*(A.fcp-A.orcAn)*A.sg)}"><span>${smoney(A.fcp-A.orcAn)} vs orçamento</span></div>`,`Performance ${nfc(S.amp,1)} p.p. pior`)}
+   ${kcell('Forecast base',`<span class="${sc(A.fcImp)}">${money(A.fc)}</span>`,`<div class="k-d ${sc(A.fcImp)}">${arrow(A.fcDev)}<span>${smoney(A.fcDev)}</span><span>(${pct(A.fcDevPct)})</span></div>`,METH[S.method])}
+   ${kcell('Otimista',money(A.fco),`<div class="k-d ${sc(A.sg*(A.fco-A.orcAn)*A.sg)}"><span>${smoney(A.fco-A.orcAn)} vs orçamento</span></div>`,`Performance ${nfc(S.amp,1)} p.p. melhor`)}
+  </div></div>`;
+  const tip=i=>{const v=i<ref?cs.cR[i]:cs.cF[i];return `<b>${MES[i]}</b><div class="tr"><span>Orçado</span><b>${money(cs.cO[i])}</b></div><div class="tr"><span>${i<ref?'Realizado':'Base'}</span><b>${money(v)}</b></div>`+(i>=ref?`<div class="tr"><span>Pessimista</span><b>${money(cs.cFp[i])}</b></div><div class="tr"><span>Otimista</span><b>${money(cs.cFo[i])}</b></div>`:'');};
+  h+=`<div class="sec"><h3>Trajetória até dezembro</h3><p class="lead">Faixa de fechamento entre os cenários pessimista e otimista, e não apenas um número.</p><div class="pn">${legend([['Orçado','var(--neutro-line)','line'],['Realizado','var(--verde)','line'],['Forecast base','var(--verde)','dash'],['Faixa de cenários','var(--verde)']])}${slot('fc',W=>lineChart({cats:MES,ref:ref-1,label:'Trajetória do forecast',h:320,series:[{c:'var(--neutro-line)',v:cs.cO,w:2.2},{c:'var(--verde)',v:cs.cF,dash:'6 5'},{c:'var(--verde)',v:cs.cR,w:3.2,dots:i=>i===ref-1},{c:'var(--verde)',v:cs.cFo.map((v,i)=>i===11?v:null),w:0,dots:true},{c:'var(--magenta)',v:cs.cFp.map((v,i)=>i===11?v:null),w:0,dots:true}],band:{lo:cs.cFp.map((v,i)=>v==null?null:Math.min(v,cs.cFo[i])),hi:cs.cFp.map((v,i)=>v==null?null:Math.max(v,cs.cFo[i]))},tip},W))}</div></div>`;
+  /* cenários */
+  const LR=ls.filter(l=>l.nat==='R'),LD=ls.filter(l=>l.nat==='D'),R=LR.length?analyze(LR):null,D=LD.length?analyze(LD):null;
+  const sr=(n,a)=>`<tr><td>${n}</td><td class="n">${money(a.orcAn)}</td><td class="n">${money(a.fcp)}</td><td class="n"><b>${money(a.fc)}</b></td><td class="n">${money(a.fco)}</td><td class="n ${sc(a.fcImp)}">${smoney(a.fcDev)} <small style="display:inline">(${pct(a.fcDevPct)})</small></td></tr>`;
+  h+=`<div class="sec"><h3>Cenários de fechamento</h3><p class="lead">Nas despesas, o cenário otimista é o de menor gasto.</p><div class="pn">${tw(`<table class="t"><thead><tr><th>Indicador</th><th class="n">Orçamento</th><th class="n">Pessimista</th><th class="n">Base</th><th class="n">Otimista</th><th class="n">Desvio do base</th></tr></thead><tbody>${R?sr('Receita',R):''}${D?sr('Despesa',D):''}${S.nat==='T'?sr('Resultado',A):''}</tbody></table>`)}</div></div>`;
+  /* drivers */
+  const ct=gContas(ls),drv=ct.slice().sort((a,b)=>Math.abs(b.fcImp)-Math.abs(a.fcImp)).slice(0,8).map(c=>Object.assign({},c,{imp:c.fcImp,dev:c.fcDev,devPct:c.fcDevPct}));
+  const rows=ct.map(c=>`<tr><td>${esc(c.grupo)}</td><td>${esc(c.conta)}</td><td class="n">${mil(c.orcAn)}</td><td class="n">${mil(c.realYtd)}</td><td class="n">${pct(c.fRest,1).replace('+','')}</td><td class="n">${mil(c.fcRest)}</td><td class="n"><b>${mil(c.fc)}</b></td><td class="n ${sc(c.fcImp)}">${smil(c.fcDev)}</td><td>${trendCell(c)}</td></tr>`).join('');
+  h+=`<div class="sec"><div class="g2"><div class="pn"><h4>O que move a projeção</h4><div class="sub">Efeito do forecast no resultado anual, por conta, vs orçamento.</div>${divList(drv,false)}</div>
+  <div class="pn"><h4>Como o forecast é calculado</h4><div class="method"><p style="margin:0 0 8px"><code>Fator = realizado ÷ orçado</code> no critério escolhido (${METH[S.method].toLowerCase()}).</p><p style="margin:0 0 8px"><code>Forecast restante = orçamento restante × fator</code></p><p style="margin:0 0 8px"><code>Forecast anual = realizado acumulado + forecast restante</code></p><p style="margin:0">O cálculo é feito por conta e agência e depois consolidado. Os cenários somam ou subtraem a amplitude ao fator, no sentido favorável ou desfavorável de cada natureza. A metodologia pode evoluir com sazonalidade e histórico por conta.</p></div></div></div></div>`;
+  h+=`<div class="sec"><h3>Forecast por conta</h3><p class="lead">Fator médio aplicado aos meses restantes, forecast e desvio contra o orçamento anual. Valores em R$ mil.</p><div class="pn">${tw(`<table class="t"><thead><tr><th>Grupo</th><th>Conta</th><th class="n">Orçamento anual</th><th class="n">Realizado acum.</th><th class="n">Fator aplicado</th><th class="n">Forecast restante</th><th class="n">Forecast anual</th><th class="n">Desvio vs orçamento</th><th>Tendência</th></tr></thead><tbody>${rows}</tbody></table>`)}</div></div>`;
+  return h;
+}
+
+/* ============ orquestração ============ */
+const TABS=[['exec','Visão executiva'],['rec','Receitas'],['desp','Despesas'],['org','Agências × Sede'],['fc','Forecast']];
+const PAGES={exec:pageExec,rec:()=>pageNature('R'),desp:()=>pageNature('D'),org:pageOrigem,fc:pageForecast};
+const SIG={};
+function setOpts(sel,opts,val){
+  const sig=JSON.stringify(opts);
+  if(SIG[sel.id]!==sig){sel.innerHTML=opts.map(([v,t,d])=>`<option value="${esc(v)}"${d?' disabled':''}>${esc(t)}</option>`).join('');SIG[sel.id]=sig;}
+  sel.value=val;
+}
+function syncFilters(){
+  const forced=S.tab==='rec'?'R':S.tab==='desp'?'D':null,eff=forced||S.nat;
+  setOpts($('#f-ref'),MES.map((m,i)=>[i+1,MESF[i][0].toUpperCase()+MESF[i].slice(1)+(i>=LAST?' (sem realizado)':''),i>=LAST]),S.ref);
+  $$('.seg [data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===S.mode));
+  const ags=[...new Set(LINES.filter(l=>l.org==='Agências').map(l=>l.ag))];
+  if(S.ag!=='Todas'&&!ags.includes(S.ag))S.ag='Todas';
+  if(S.uni==='Sede')S.ag='Todas';
+  const onOrg=S.tab==='org';
+  $('#f-uni').value=S.uni;$('#f-uni').disabled=onOrg;
+  setOpts($('#f-ag'),[['Todas','Todas as agências'],...ags.map(a=>[a,a])],S.ag);$('#f-ag').disabled=onOrg||S.uni==='Sede';
+  $('#f-nat').value=eff;$('#f-nat').disabled=!!forced;
+  const gs=[...new Map(LINES.filter(l=>eff==='T'||l.nat===eff).map(l=>[l.grupo,l.grupo])).keys()];
+  if(S.grp!=='Todos'&&!gs.includes(S.grp)){S.grp='Todos';S.conta='Todas';}
+  setOpts($('#f-grp'),[['Todos','Todos os grupos'],...gs.map(g=>[g,g])],S.grp);
+  const cs=[...new Map(LINES.filter(l=>(eff==='T'||l.nat===eff)&&(S.grp==='Todos'||l.grupo===S.grp)).map(l=>[l.cod,l.conta])).entries()];
+  if(S.conta!=='Todas'&&!cs.some(c=>c[0]===S.conta))S.conta='Todas';
+  setOpts($('#f-conta'),[['Todas','Todas as contas'],...cs.map(c=>[c[0],c[1]])],S.conta);
+}
+function syncHeader(){
+  $('#subt').textContent=`Planejamento financeiro da cooperativa. Exercício ${ANO}, realizado até ${MESF[LAST-1]}.`;
+  const p=$('#srcpill');p.textContent=SRC==='sim'?'Dados simulados':'Base carregada'+(SRCNAME?': '+SRCNAME:'');
+  $$('#tabs .tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===S.tab));
+}
+function render(){
+  computeForecasts();syncFilters();syncHeader();
+  $('#view').innerHTML=PAGES[S.tab]();
+  drawCharts();
+}
+function go(t){S.tab=t;S.sort={k:'ord',d:1};S.exp.clear();render();window.scrollTo({top:0,behavior:'auto'});}
+function clearFilters(){S.mode='ytd';S.uni='Cooperativa';S.ag='Todas';S.nat='T';S.grp='Todos';S.conta='Todas';S.ref=LAST;render();}
+
+/* eventos */
+document.addEventListener('change',e=>{
+  const t=e.target,f=t.dataset&&t.dataset.f;if(!f)return;
+  if(['ref','amp','matHi','matMid'].includes(f))S[f]=parseFloat(t.value)||0;
+  else{S[f]=t.value;if(f==='grp')S.conta='Todas';}
+  if(f==='matHi'||f==='matMid'){if(S.matMid>S.matHi){S.matMid=S.matHi;$('#p-mid').value=S.matMid;}}
+  render();
+});
+document.addEventListener('input',e=>{if(e.target.id==='f-amp')$('#ampo').textContent=nfc(parseFloat(e.target.value),1);});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,tr[data-x],[data-close]');if(!t)return;
+  if(t.dataset.tab)return go(t.dataset.tab);
+  if(t.dataset.go)return go(t.dataset.go);
+  if(t.dataset.mode){S.mode=t.dataset.mode;return render();}
+  if(t.dataset.method){S.method=t.dataset.method;return render();}
+  if(t.dataset.clear||t.id==='btn-clear')return clearFilters();
+  if(t.dataset.sort){const k=t.dataset.sort;if(S.sort.k===k)S.sort.d*=-1;else S.sort={k,d:['grupo','conta','org'].includes(k)?1:-1};return render();}
+  if(t.dataset.x){const k=t.dataset.x;S.exp.has(k)?S.exp.delete(k):S.exp.add(k);return render();}
+  if(t.dataset.close)return $('#'+t.dataset.close).close();
+  if(t.id==='btn-params'){$('#p-hi').value=S.matHi;$('#p-mid').value=S.matMid;return $('#dlgP').showModal();}
+  if(t.id==='btn-load'){$('#lmsg').textContent='';return $('#dlgL').showModal();}
+  if(t.id==='btn-sim'){loadSim();$('#lmsg').textContent='Dados simulados restaurados.';S.grp='Todos';S.conta='Todas';S.ag='Todas';render();}
+});
+document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t.matches&&t.matches('tr[data-x]')){e.preventDefault();t.click();}});
+$('#file').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;const m=$('#lmsg');
+  try{const r=importCSV(await f.text());LINES=r.lines;ANO=r.year;LAST=lastActual(LINES);S.ref=LAST;SRC='csv';SRCNAME=f.name;S.grp='Todos';S.conta='Todas';S.ag='Todas';S.exp.clear();
+    m.style.color='var(--favtxt)';m.textContent=`Base carregada: ${nfc(r.n)} linhas, realizado até ${MESF[LAST-1]}.`;render();}
+  catch(err){m.style.color='var(--unf)';m.textContent=err.message;}
+  e.target.value='';
+});
+/* tooltip */
+const tip=$('#tip');
+document.addEventListener('pointermove',e=>{
+  const t=e.target.closest&&e.target.closest('[data-tip]');
+  if(!t||!t.getAttribute('data-tip')){tip.style.display='none';return;}
+  tip.innerHTML=t.getAttribute('data-tip');tip.style.display='block';
+  const w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;
+  tip.style.left=Math.max(6,x)+'px';tip.style.top=Math.max(6,y)+'px';
+});
+document.addEventListener('pointerleave',()=>{tip.style.display='none';},true);
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(drawCharts,120);});
+
+/* início */
+$('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="tab" type="button" role="tab" data-tab="${k}"><span>${l}</span></button>`).join('');
+loadSim();render();
+</script>
+</body>
+</html>
